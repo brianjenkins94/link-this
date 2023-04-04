@@ -1,0 +1,34 @@
+{
+  "name": "link-this",
+  "version": "0.0.0",
+  "description": "A LinkedIn job scraper.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brianjenkins94/link-this.git"
+  },
+  "author": "Brian Jenkins",
+  "bugs": {
+    "url": "https://github.com/brianjenkins94/link-this/issues"
+  },
+  "homepage": "https://github.com/brianjenkins94/link-this#readme",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-specifier-resolution=node --loader=ts-node/esm index.ts"
+  },
+  "dependencies": {
+    "playwright-chromium": "latest",
+    "ts-node": "latest"
+  },
+  "devDependencies": {
+    "@tsconfig/node-lts": "latest",
+    "@types/node": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "eslint": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
