@@ -14,7 +14,9 @@ if (LI_AT_COOKIE === undefined) {
 }
 
 const selectors = {
+	"apply": ".jobs-apply-button",
 	"jobs": ".job-card-container",
+	"logo": ".artdeco-entity-lockup__image img",
 	"details": ".jobs-details__main-content",
 	"title": ".artdeco-entity-lockup__title",
 	"link": ".artdeco-entity-lockup__title a",
@@ -69,6 +71,9 @@ const searches = searchTerms.map(function(searchTerm) {
 				const results = [];
 
 				for (let pageNumber = 2; pageNumber < 5; pageNumber++) {
+					await page.waitForTimeout(2500);
+
+					// Mitigate skipping
 					await page.waitForSelector(selectors.jobs);
 
 					for (let x = 0, jobs = page.locator(selectors.jobs), job = jobs.nth(x); x < await jobs.count(); x++, jobs = page.locator(selectors.jobs), job = jobs.nth(x)) {
@@ -84,6 +89,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 						const result = {
 							"title": (await job.locator(selectors.title).textContent()).trim(),
+							"logo": (await job.locator(selectors.logo).getAttribute("src")).trim(),
 							"link": (await job.locator(selectors.link).evaluate(function(element: HTMLAnchorElement) { return element.href; })).trim(),
 							"company": (await job.locator(selectors.company).textContent()).trim(),
 							"location": (await job.locator(selectors.location).textContent()).trim().replace(/\s{2,}/gu, " - "),
@@ -92,6 +98,26 @@ const searches = searchTerms.map(function(searchTerm) {
 						};
 
 						console.log(result);
+
+						if (false) {
+							const applyButton = details.locator(selectors.apply).first();
+
+							if (!(await applyButton.textContent()).includes("Easy Apply")) {
+								const popupPromise = page.waitForEvent("popup");
+
+								await applyButton.click();
+
+								const popup = await popupPromise;
+
+								try {
+									await popup.waitForLoadState();
+								} catch (error) { } finally {
+									await popup.close();
+								}
+
+								console.log("Applied ¬‿¬");
+							}
+						}
 
 						results.push(result);
 					}
@@ -135,8 +161,16 @@ await fs.appendFile(readme, [
 	"\n"
 ].join("\n"));
 
-for (let x = 0, result = results[x] as any[]; x < results.length; x++, result = results[x] as any[]) {
+const unique = new Set();
+
+for (let x = 0, result = results[x]; x < results.length; x++, result = results[x]) {
 	const filteredResults = result.filter(function(result) {
+		if (unique.has(result)) {
+			return false;
+		}
+
+		unique.add(result);
+
 		return !/account|manage|salesforce|security|servicenow/u.test(result.title.toLowerCase())
 			&& (result.greenText !== undefined
 				|| parseInt(result.compensation?.match(/\$[\d,]+/gu)[0].replace(/[$,]+/gu, "")) >= 150000)
@@ -146,6 +180,7 @@ for (let x = 0, result = results[x] as any[]; x < results.length; x++, result = 
 		"<table>",
 		"<thead>",
 		"<tr>",
+		"<th><!-- Logo --></th>",
 		"<th>Company</th>",
 		"<th>Position</th>",
 		"<th>Compensation</th>",
@@ -154,9 +189,10 @@ for (let x = 0, result = results[x] as any[]; x < results.length; x++, result = 
 		"<tbody>"
 	];
 
-	for (const { title, link, company, compensation } of filteredResults) {
+	for (const { title, link, logo, company, compensation } of filteredResults) {
 		table.push(
 			"<tr>",
+			"<td><a href=\"" + link + "\"><img alt=\"" + company + "\" height=\"50%\" width=\"50%\" src=\"" + logo + "\"></a></td>",
 			"<td>" + company + "</td>",
 			"<td><a href=\"" + link + "\">" + title + "</a></td>",
 			"<td>" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",

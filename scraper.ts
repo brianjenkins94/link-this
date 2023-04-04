@@ -1,4 +1,4 @@
-import { Browser, BrowserContext, chromium } from "playwright-chromium";
+import { Browser, BrowserContext, chromium, Page } from "playwright-chromium";
 
 let browser: Browser;
 
@@ -14,11 +14,11 @@ export async function scrape(url, callback) {
 
 	const page = await context.newPage();
 
-    const results = await callback({
-        "browser": browser,
-        "context": context,
-        "page": page
-    });
+	const results = await callback({
+		"browser": browser,
+		"context": context,
+		"page": page
+	});
 
 	await page.close();
 
