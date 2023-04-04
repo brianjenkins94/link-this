@@ -7,6 +7,7 @@
     "url": "git+https://github.com/brianjenkins94/link-this.git"
   },
   "author": "Brian Jenkins",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/brianjenkins94/link-this/issues"
   },

@@ -128,9 +128,6 @@ for (const search of searches) {
 		"<table>",
 		"<thead>",
 		"<tr>",
-		"<th colspan=\"3\">Search term: `" + search + "`</th>",
-		"</tr>",
-		"<tr>",
 		"<th>Company</th>",
 		"<th>Position</th>",
 		"<th>Compensation</th>",
@@ -143,8 +140,8 @@ for (const search of searches) {
 		table.push(
 			"<tr>",
 			"<td>" + company + "</td>",
-			"<td>[" + title + "](" + link + ")</td>",
-			"<td>" + compensation?.split(" (from job description)")[0] + "</td>",
+			"<td><a href=\"" + link + "\">" + title + "</a></td>",
+			"<td>" + compensation?.split(" (from job description)")[0] ?? "" + "</td>",
 			"</tr>"
 		);
 	}
@@ -155,5 +152,9 @@ for (const search of searches) {
 		"\n"
 	)
 
-	await fs.appendFile(readme, table.join("\n"));
+	await fs.appendFile(readme, [
+		"### Search term: `" + search + "`",
+		"",
+		...table
+	].join("\n"));
 }
