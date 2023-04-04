@@ -24,6 +24,8 @@ const selectors = {
 	"location": ".artdeco-entity-lockup__caption",
 	"date": ".job-card-container__listed-time time",
 	"compensation": "[href=\"#SALARY\"]",
+	"size": ".jobs-unified-top-card__job-insight:has([type=\"company\"])",
+	"industry": ".jobs-unified-top-card__job-insight:has([type=\"company\"])",
 	"getPage": function(index) {
 		return "li[data-test-pagination-page-btn=\"" + index + "\"] button";
 	}
@@ -37,7 +39,8 @@ const searchTerms = [
 	"integration",
 	"node.js",
 	"professional services",
-	"solutions"
+	"solutions",
+	"typescript"
 ];
 
 const searches = searchTerms.map(function(searchTerm) {
@@ -70,7 +73,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber < 5; pageNumber++) {
+				for (let pageNumber = 2; pageNumber <= 6; pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
@@ -94,7 +97,9 @@ const searches = searchTerms.map(function(searchTerm) {
 							"company": (await job.locator(selectors.company).textContent()).trim(),
 							"location": (await job.locator(selectors.location).textContent()).trim().replace(/\s{2,}/gu, " - "),
 							"greenText": (await job.locator(selectors.date).count()) > 0 ? (await job.locator(selectors.date).textContent()).split(/(?<=ago)/u)[0].trim() : undefined,
-							"compensation": (await details.locator(selectors.compensation).count()) > 0 ? (await details.locator(selectors.compensation).textContent()).trim() : undefined
+							"compensation": (await details.locator(selectors.compensation).count()) > 0 ? (await details.locator(selectors.compensation).textContent()).split(" (from job description)")[0].trim() : undefined,
+							"size": (await details.locator(selectors.size).count()) > 0 ? (await details.locator(selectors.size).textContent()).split(" · ")[0].trim() : undefined,
+							"industry": (await details.locator(selectors.industry).count()) > 0 ? (await details.locator(selectors.industry).textContent()).split(" · ")[1]?.trim() : undefined
 						};
 
 						console.log(result);
@@ -165,14 +170,21 @@ const unique = new Set();
 
 for (let x = 0, result = results[x]; x < results.length; x++, result = results[x]) {
 	const filteredResults = result.filter(function(result) {
-		if (unique.has(result)) {
+		if (unique.has({
+			...result,
+			"link": undefined
+		})) {
 			return false;
 		}
 
-		unique.add(result);
+		unique.add({
+			...result,
+			"link": undefined
+		});
 
 		return !/account|manage|salesforce|security|servicenow/u.test(result.title.toLowerCase())
 			&& (result.greenText !== undefined
+				// We are preferential to newer job postings, but if the low bound of the salary range is above my /minimum/ salary expectations, I'll look at it too.
 				|| parseInt(result.compensation?.match(/\$[\d,]+/gu)[0].replace(/[$,]+/gu, "")) >= 150000)
 	});
 
@@ -180,22 +192,24 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		"<table>",
 		"<thead>",
 		"<tr>",
-		"<th><!-- Logo --></th>",
-		"<th>Company</th>",
-		"<th>Position</th>",
-		"<th>Compensation</th>",
+		"<th width=\"25%\"><!-- Logo --></th>",
+		"<th width=\"25%\">Company</th>",
+		"<th width=\"50%\">Position</th>",
+		"<th width=\"25%\">Size</th>",
+		//"<th width=\"25%\">Compensation</th>",
 		"</tr>",
 		"</thead>",
 		"<tbody>"
 	];
 
-	for (const { title, link, logo, company, compensation } of filteredResults) {
+	for (const { title, greenText, link, logo, company, compensation, size, industry } of filteredResults) {
 		table.push(
 			"<tr>",
-			"<td width=\"0%\"><a href=\"" + link + "\"><img alt=\"" + company + "\" height=\"50px\" width=\"50px\" src=\"" + logo + "\"></a></td>",
-			"<td width=\"0%\">" + company + "</td>",
-			"<td width=\"100%\"><a href=\"" + link + "\">" + title + "</a></td>",
-			"<td width=\"0%\">" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",
+			"<td><a href=\"" + link + "\"><img alt=\"" + company + "\" height=\"50px\" width=\"50px\" src=\"" + logo + "\"></a></td>",
+			"<td>" + company + (industry !== undefined ? "<br />" + industry : "") + "</td>",
+			"<td><ul><li>💼 <a href=\"" + link + "\">" + title + "</a></li>" + (compensation !== undefined ? "<li>💰 " + compensation + "</li>" : "") + + (greenText !== undefined ? "<li>⚠ " + greenText + "</li>" : "") + "</ul></td>",
+			"<td>" + size + "</td>",
+			//"<td>" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",
 			"</tr>"
 		);
 	}
