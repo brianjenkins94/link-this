@@ -27,15 +27,98 @@ const selectors = {
 	}
 };
 
-const searches = [
-	"node.js",
-	"solutions",
+const searchTerms = [
+	"api",
 	"architect",
 	"engineer",
-	"integration",
 	"implementation",
-	"professional services"
+	"integration",
+	"node.js",
+	"professional services",
+	"solutions"
 ];
+
+const searches = searchTerms.map(function(searchTerm) {
+	const query = new URLSearchParams({
+		"keywords": searchTerm,
+		"location": "United States",
+		"sortBy": "DD",
+		"f_JT": "F",
+		"f_SB2": "6",
+		"f_WT": "2"
+	});
+
+	const url = "https://www.linkedin.com/jobs/search?" + query;
+
+	return function() {
+		return new Promise(function(resolve, reject) {
+			scrape(url, async function({ browser, context, page }) {
+				if ((await page.context().cookies()).length === 0) {
+					await context.addCookies([
+						{
+							"name": "li_at",
+							"value": LI_AT_COOKIE,
+							"domain": ".www.linkedin.com",
+							"path": "/"
+						}
+					]);
+				}
+
+				await page.goto(url);
+
+				const results = [];
+
+				for (let pageNumber = 2; pageNumber < 5; pageNumber++) {
+					await page.waitForSelector(selectors.jobs);
+
+					for (let x = 0, jobs = page.locator(selectors.jobs), job = jobs.nth(x); x < await jobs.count(); x++, jobs = page.locator(selectors.jobs), job = jobs.nth(x)) {
+						job.evaluate(function(element) {
+							element.scrollIntoView(true);
+						});
+
+						await job.click();
+
+						await page.waitForSelector(".jobs-unified-top-card__job-insight");
+
+						const details = page.locator(selectors.details);
+
+						const result = {
+							"title": (await job.locator(selectors.title).textContent()).trim(),
+							"link": (await job.locator(selectors.link).evaluate(function(element: HTMLAnchorElement) { return element.href; })).trim(),
+							"company": (await job.locator(selectors.company).textContent()).trim(),
+							"location": (await job.locator(selectors.location).textContent()).trim().replace(/\s{2,}/gu, " - "),
+							"greenText": (await job.locator(selectors.date).count()) > 0 ? (await job.locator(selectors.date).textContent()).split(/(?<=ago)/u)[0].trim() : undefined,
+							"compensation": (await details.locator(selectors.compensation).count()) > 0 ? (await details.locator(selectors.compensation).textContent()).trim() : undefined
+						};
+
+						console.log(result);
+
+						results.push(result);
+					}
+
+					await page.locator(selectors.getPage(pageNumber)).click();
+				}
+
+				await page.close();
+
+				resolve(results);
+			});
+		});
+	}
+});
+
+//const results = await Promise.all(searches);
+
+// TODO: Not this.
+const results = await (async function() {
+	const results = [];
+
+	for (const search of searches) {
+		results.push(await search());
+	}
+
+	return results;
+})();
 
 //const outputDirectory = path.join(__dirname, "out");
 
@@ -52,76 +135,11 @@ await fs.appendFile(readme, [
 	"\n"
 ].join("\n"));
 
-for (const search of searches) {
-	const query = new URLSearchParams({
-		"keywords": search,
-		"location": "United States",
-		"sortBy": "DD",
-		"f_JT": "F",
-		"f_SB2": "6",
-		"f_WT": "2"
-	});
-
-	const url = "https://www.linkedin.com/jobs/search?" + query;
-
-	let results = await scrape(url, async function({ browser, context, page }) {
-		await context.addCookies([
-			{
-				"name": "li_at",
-				"value": LI_AT_COOKIE,
-				"domain": ".www.linkedin.com",
-				"path": "/"
-			}
-		]);
-
-		await page.goto(url);
-
-		const results = [];
-
-		for (let pageNumber = 2; pageNumber < 5; pageNumber++) {
-			await page.waitForSelector(selectors.jobs);
-
-			for (let x = 0, jobs = page.locator(selectors.jobs), job = jobs.nth(x); x < await jobs.count(); x++, jobs = page.locator(selectors.jobs), job = jobs.nth(x)) {
-				job.evaluate(function(element) {
-					element.scrollIntoView(true);
-				});
-
-				await job.click();
-
-				await page.waitForSelector(".jobs-unified-top-card__job-insight");
-
-				const details = page.locator(selectors.details);
-
-				const result = {
-					"title": (await job.locator(selectors.title).textContent()).trim(),
-					"link": (await job.locator(selectors.link).evaluate(function(element: HTMLAnchorElement) { return element.href; })).trim(),
-					"company": (await job.locator(selectors.company).textContent()).trim(),
-					"location": (await job.locator(selectors.location).textContent()).trim().replace(/\s{2,}/gu, " - "),
-					"greenText": (await job.locator(selectors.date).count()) > 0 ? (await job.locator(selectors.date).textContent()).split(/(?<=ago)/u)[0].trim() : undefined,
-					"compensation": (await details.locator(selectors.compensation).count()) > 0 ? (await details.locator(selectors.compensation).textContent()).trim() : undefined
-				};
-
-				console.log(result);
-
-				results.push(result);
-			}
-
-			await page.locator(selectors.getPage(pageNumber)).click();
-		}
-
-		await page.close();
-
-		return results;
-	});
-
-	//const fileName = search.replace(/ /gu, "_") + ".json";
-
-	//await fs.writeFile(path.join(outputDirectory, fileName), JSON.stringify(results.filter(function(result) {
-	//	return result.greenText !== undefined;
-	//}), undefined, "\t"));
-
-	results = results.filter(function(result) {
-		return result.greenText !== undefined;
+for (let x = 0, result = results[x] as any[]; x < results.length; x++, result = results[x] as any[]) {
+	const filteredResults = result.filter(function(result) {
+		return !["account", "manager", "salesforce", "security", "servicenow"].includes(result.title.toLowerCase())
+			&& (result.greenText !== undefined
+				|| parseInt(result.compensation?.match(/\$[\d,]+/gu).pop().replace(/[$,]+/gu, "")) > 150000)
 	});
 
 	const table = [
@@ -136,12 +154,12 @@ for (const search of searches) {
 		"<tbody>"
 	];
 
-	for (const { title, link, company, compensation } of results) {
+	for (const { title, link, company, compensation } of filteredResults) {
 		table.push(
 			"<tr>",
 			"<td>" + company + "</td>",
 			"<td><a href=\"" + link + "\">" + title + "</a></td>",
-			"<td>" + compensation?.split(" (from job description)")[0] ?? "" + "</td>",
+			"<td>" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",
 			"</tr>"
 		);
 	}
@@ -153,7 +171,7 @@ for (const search of searches) {
 	)
 
 	await fs.appendFile(readme, [
-		"### Search term: `" + search + "`",
+		"### Search term: `" + searchTerms[x] + "`",
 		"",
 		...table
 	].join("\n"));
