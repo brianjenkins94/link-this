@@ -192,10 +192,10 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 	for (const { title, link, logo, company, compensation } of filteredResults) {
 		table.push(
 			"<tr>",
-			"<td><a href=\"" + link + "\"><img alt=\"" + company + "\" height=\"50%\" width=\"50%\" src=\"" + logo + "\"></a></td>",
-			"<td>" + company + "</td>",
-			"<td><a href=\"" + link + "\">" + title + "</a></td>",
-			"<td>" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",
+			"<td width=\"0%\"><a href=\"" + link + "\"><img alt=\"" + company + "\" height=\"50px\" width=\"50px\" src=\"" + logo + "\"></a></td>",
+			"<td width=\"0%\">" + company + "</td>",
+			"<td width=\"100%\"><a href=\"" + link + "\">" + title + "</a></td>",
+			"<td width=\"0%\">" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",
 			"</tr>"
 		);
 	}
