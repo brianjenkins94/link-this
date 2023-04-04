@@ -137,9 +137,9 @@ await fs.appendFile(readme, [
 
 for (let x = 0, result = results[x] as any[]; x < results.length; x++, result = results[x] as any[]) {
 	const filteredResults = result.filter(function(result) {
-		return !["account", "manager", "salesforce", "security", "servicenow"].includes(result.title.toLowerCase())
+		return !/account|manage|salesforce|security|servicenow/u.test(result.title.toLowerCase())
 			&& (result.greenText !== undefined
-				|| parseInt(result.compensation?.match(/\$[\d,]+/gu).pop().replace(/[$,]+/gu, "")) > 150000)
+				|| parseInt(result.compensation?.match(/\$[\d,]+/gu)[0].replace(/[$,]+/gu, "")) >= 150000)
 	});
 
 	const table = [
@@ -176,3 +176,5 @@ for (let x = 0, result = results[x] as any[]; x < results.length; x++, result = 
 		...table
 	].join("\n"));
 }
+
+process.exit(0);
