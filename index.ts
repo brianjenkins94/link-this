@@ -73,7 +73,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber < 10; pageNumber++) {
+				for (let pageNumber = 2; pageNumber < 12; pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
@@ -133,6 +133,9 @@ const searches = searchTerms.map(function(searchTerm) {
 
 					if ((await page.locator(selectors.getPage(pageNumber)).count()) > 0) {
 						await page.locator(selectors.getPage(pageNumber)).click();
+					} else {
+						// TODO: Improve
+						await page.locator(".jobs-search-results-list__pagination li").filter({ "hasText": "…" }).click();
 					}
 				}
 
@@ -176,21 +179,21 @@ const unique = new Set();
 
 for (let x = 0, result = results[x]; x < results.length; x++, result = results[x]) {
 	const filteredResults = result.filter(function(result) {
-		if (unique.has({
+		if (unique.has(JSON.stringify({
 			...result,
 			"link": undefined,
 			"location": undefined,
 			"logo": undefined
-		})) {
+		}))) {
 			return false;
 		}
 
-		unique.add({
+		unique.add(JSON.stringify({
 			...result,
 			"link": undefined,
 			"location": undefined,
 			"logo": undefined
-		});
+		}));
 
 		return !/account|manage|salesforce|security|servicenow/ui.test(result.title)
 			&& !/insurance|defense|govern|medical|health|banking|financial/ui.test(result.industry)
