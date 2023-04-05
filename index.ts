@@ -73,7 +73,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber <= 8; pageNumber++) {
+				for (let pageNumber = 2; pageNumber < 10; pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
