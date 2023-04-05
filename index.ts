@@ -179,6 +179,7 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		if (unique.has({
 			...result,
 			"link": undefined,
+			"location": undefined,
 			"logo": undefined
 		})) {
 			return false;
@@ -187,6 +188,7 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		unique.add({
 			...result,
 			"link": undefined,
+			"location": undefined,
 			"logo": undefined
 		});
 
