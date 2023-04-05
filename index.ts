@@ -73,7 +73,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber <= 8; pageNumber++) {
+				for (let pageNumber = 2; pageNumber < 10; pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
@@ -89,20 +89,6 @@ const searches = searchTerms.map(function(searchTerm) {
 						await page.waitForSelector(".jobs-unified-top-card__job-insight");
 
 						const details = page.locator(selectors.details);
-
-						const result = {
-							"title": (await job.locator(selectors.title).textContent()).trim(),
-							"logo": (await job.locator(selectors.logo).getAttribute("src")).trim(),
-							"link": (await job.locator(selectors.link).evaluate(function(element: HTMLAnchorElement) { return element.href; })).trim(),
-							"company": (await job.locator(selectors.company).textContent()).trim(),
-							"location": (await job.locator(selectors.location).textContent()).trim().replace(/\s{2,}/gu, " - "),
-							"date": (await details.locator(selectors.date).textContent()).split(/(?<=ago)/u)[0].trim(),
-							"compensation": (await details.locator(selectors.compensation).count()) > 0 ? (await details.locator(selectors.compensation).textContent()).split(" (from job description)")[0].trim() : undefined,
-							"size": (await details.locator(selectors.size).count()) > 0 ? (await details.locator(selectors.size).textContent()).split(" · ")[0]?.trim() : undefined,
-							"industry": (await details.locator(selectors.industry).count()) > 0 ? (await details.locator(selectors.industry).textContent()).split(" · ")[1]?.trim() : undefined
-						};
-
-						console.log(result);
 
 						if (false) {
 							const applyButton = details.locator(selectors.apply).first();
@@ -124,10 +110,30 @@ const searches = searchTerms.map(function(searchTerm) {
 							}
 						}
 
-						results.push(result);
+						try {
+							const result = {
+								"title": (await job.locator(selectors.title).textContent()).trim(),
+								"logo": (await job.locator(selectors.logo).getAttribute("src")).trim(),
+								"link": (await job.locator(selectors.link).evaluate(function(element: HTMLAnchorElement) { return element.href; })).trim(),
+								"company": (await job.locator(selectors.company).textContent()).trim(),
+								"location": (await job.locator(selectors.location).textContent()).trim().replace(/\s{2,}/gu, " - "),
+								"date": (await details.locator(selectors.date).textContent()).split(/(?<=ago)/u)[0].trim(),
+								"compensation": (await details.locator(selectors.compensation).count()) > 0 ? (await details.locator(selectors.compensation).textContent()).split(" (from job description)")[0].trim() : undefined,
+								"size": (await details.locator(selectors.size).count()) > 0 ? (await details.locator(selectors.size).textContent()).split(" · ")[0]?.trim() : undefined,
+								"industry": (await details.locator(selectors.industry).count()) > 0 ? (await details.locator(selectors.industry).textContent()).split(" · ")[1]?.trim() : undefined
+							};
+
+							console.log(result);
+
+							results.push(result);
+						} catch (error) {
+							console.error(error);
+						}
 					}
 
-					await page.locator(selectors.getPage(pageNumber)).click();
+					if ((await page.locator(selectors.getPage(pageNumber)).count()) > 0) {
+						await page.locator(selectors.getPage(pageNumber)).click();
+					}
 				}
 
 				await page.close();
@@ -187,8 +193,8 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		return !/account|manage|salesforce|security|servicenow/ui.test(result.title)
 			&& !/insurance|defense|govern|medical|health|banking|financial/ui.test(result.industry)
 			&& (!/weeks|month/u.test(result.date)
-				// We are preferential to newer job postings, but if the low bound of the salary range is above my /minimum/ salary expectations, I'll look at it too.
-				|| parseInt(result.compensation?.match(/\$[\d,]+/gu)[0].replace(/[$,]+/gu, "")) >= 150000)
+				// We are preferential to newer job postings, but if the low bound of the salary range is above my /minimum/ salary expectations, I'll look at it.
+				|| parseInt((result.compensation?.match(/\$[\d,]+/gu) || [""])[0].replace(/[$,]+/gu, "")) >= 150000)
 	});
 
 	const table = [
