@@ -84,7 +84,12 @@ const searches = searchTerms.map(function(searchTerm) {
 							element.scrollIntoView(true);
 						});
 
-						await job.click();
+						await job.click({
+							"position": {
+								"x": 0,
+								"y": 0
+							}
+						});
 
 						await page.waitForSelector(".jobs-unified-top-card__job-insight");
 
@@ -134,8 +139,7 @@ const searches = searchTerms.map(function(searchTerm) {
 					if ((await page.locator(selectors.getPage(pageNumber)).count()) > 0) {
 						await page.locator(selectors.getPage(pageNumber)).click();
 					} else {
-						// TODO: Improve
-						await page.locator(".jobs-search-results-list__pagination li").filter({ "hasText": "…" }).click();
+						await page.locator(selectors.getPage(pageNumber - 1) + " + *").click();
 					}
 				}
 
