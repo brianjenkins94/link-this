@@ -73,7 +73,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber < 10; pageNumber++) {
+				for (let pageNumber = 2; pageNumber <= 8; pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
@@ -172,17 +172,20 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 	const filteredResults = result.filter(function(result) {
 		if (unique.has({
 			...result,
-			"link": undefined
+			"link": undefined,
+			"logo": undefined
 		})) {
 			return false;
 		}
 
 		unique.add({
 			...result,
-			"link": undefined
+			"link": undefined,
+			"logo": undefined
 		});
 
-		return !/account|manage|salesforce|security|servicenow/u.test(result.title.toLowerCase())
+		return !/account|manage|salesforce|security|servicenow/ui.test(result.title)
+			&& !/insurance|defense|govern|medical|health|banking|financial/ui.test(result.industry)
 			&& (!/weeks|month/u.test(result.date)
 				// We are preferential to newer job postings, but if the low bound of the salary range is above my /minimum/ salary expectations, I'll look at it too.
 				|| parseInt(result.compensation?.match(/\$[\d,]+/gu)[0].replace(/[$,]+/gu, "")) >= 150000)
@@ -192,8 +195,8 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		"<table>",
 		"<thead>",
 		"<tr>",
-		"<th width=\"75px\"><!-- Logo --></th>",
-		"<th width=\"25%\">Company</th>",
+		"<th width=\"10%\"><!-- Logo --></th>",
+		"<th width=\"40%\">Company</th>",
 		"<th width=\"50%\">Position</th>",
 		//"<th width=\"25%\">Size</th>",
 		//"<th width=\"25%\">Compensation</th>",
