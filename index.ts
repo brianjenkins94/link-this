@@ -27,19 +27,20 @@ const selectors = {
 	"size": ".jobs-unified-top-card__job-insight:has([type=\"company\"])",
 	"industry": ".jobs-unified-top-card__job-insight:has([type=\"company\"])",
 	"getPage": function(index) {
-		return "li[data-test-pagination-page-btn=\"" + index + "\"] button";
+		return "li[data-test-pagination-page-btn=\"" + index + "\"]";
 	}
 };
 
 const searchTerms = [
 	"api",
 	"architect",
-	"engineer",
+	"customer engineer",
 	"implementation",
 	"integration",
 	"node.js",
 	"professional services",
 	"solutions",
+	"support engineer",
 	"typescript"
 ];
 
@@ -98,20 +99,25 @@ const searches = searchTerms.map(function(searchTerm) {
 						if (false) {
 							const applyButton = details.locator(selectors.apply).first();
 
-							if (!(await applyButton.textContent()).includes("Easy Apply")) {
-								const popupPromise = page.waitForEvent("popup");
+							if (await applyButton.count() > 0) {
+								await applyButton.waitForSelector("text=/^Apply/");
 
-								await applyButton.click();
+								if (!(await applyButton.textContent()).includes("Easy Apply")) {
 
-								const popup = await popupPromise;
+									const popupPromise = page.waitForEvent("popup");
 
-								try {
-									await popup.waitForLoadState();
-								} catch (error) { } finally {
-									await popup.close();
+									await applyButton.click();
+
+									const popup = await popupPromise;
+
+									try {
+										await popup.waitForLoadState();
+									} catch (error) { } finally {
+										await popup.close();
+									}
+
+									console.log("Applied ¬‿¬");
 								}
-
-								console.log("Applied ¬‿¬");
 							}
 						}
 
@@ -151,6 +157,8 @@ const searches = searchTerms.map(function(searchTerm) {
 	}
 });
 
+const startTime = performance.now();
+
 //const results = await Promise.all(searches);
 
 // TODO: Not this.
@@ -170,12 +178,16 @@ const results = await (async function() {
 
 const readme = path.join(__dirname, "README.md");
 
-await fs.writeFile(readme, (await fs.readFile(readme, { "encoding": "utf8" })).split(/(?<=A LinkedIn job scraper.)/u)[0] + "\n\n");
+await fs.writeFile(readme, (await fs.readFile(readme, { "encoding": "utf8" })).split(/(?<=<!-- -->)/u)[0] + "\n\n");
 
 await fs.appendFile(readme, [
 	"## Jobs",
 	"",
 	"Last scraped: " + new Date().toUTCString(),
+	"",
+	"<table><thead><tr><th align=\"center\"><strong>Contents</strong></th></tr></thead><tbody><tr><td><ol>" + searchTerms.map(function(searchTerm) {
+		return "<li><a href=\"#" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\">Search term: `" + searchTerm + "`</a></li>";
+	}) + "</ol></td></tr></tbody></table>",
 	"\n"
 ].join("\n"));
 
@@ -244,5 +256,10 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		...table
 	].join("\n"));
 }
+
+const endTime = performance.now();
+const dateTime = new Date(endTime - startTime);
+
+console.log("Job began at" + dateTime.toUTCString() + " and took " + dateTime.getMinutes() + " minutes");
 
 process.exit(0);
