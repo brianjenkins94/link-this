@@ -138,10 +138,14 @@ const searches = searchTerms.map(function(searchTerm) {
 						}
 					}
 
-					if ((await page.locator(selectors.getPage(pageNumber)).count()) > 0) {
-						await page.locator(selectors.getPage(pageNumber)).click();
-					} else {
-						await page.locator(selectors.getPage(pageNumber - 1) + " + *").click();
+					try {
+						if ((await page.locator(selectors.getPage(pageNumber)).count()) > 0) {
+							await page.locator(selectors.getPage(pageNumber)).click();
+						} else {
+							await page.locator(selectors.getPage(pageNumber - 1) + " + *").click();
+						}
+					} catch (error) {
+						break;
 					}
 				}
 
@@ -182,8 +186,8 @@ await fs.appendFile(readme, [
 	"Last scraped: " + new Date().toUTCString(),
 	"",
 	"<table><thead><tr><th align=\"center\"><strong>Contents</strong></th></tr></thead><tbody><tr><td><ol>" + searchTerms.map(function(searchTerm) {
-		return "<li><a href=\"#" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\">Search term: `" + searchTerm + "`</a></li>";
-	}) + "</ol></td></tr></tbody></table>",
+		return "<li><a href=\"#" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\">Search term: <code>" + searchTerm + "</code></a></li>";
+	}).join("") + "</ol></td></tr></tbody></table>",
 	"\n"
 ].join("\n"));
 
@@ -257,7 +261,7 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 }
 
 const endTime = performance.now();
-const dateTime = new Date(endTime - startTime);
+const dateTime = new Date(Date.now() + (endTime - startTime));
 
 console.log("Job began at " + dateTime.toUTCString() + " and took " + dateTime.getMinutes() + " minutes.");
 

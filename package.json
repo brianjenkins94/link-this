@@ -14,7 +14,7 @@
   "homepage": "https://github.com/brianjenkins94/link-this#readme",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-specifier-resolution=node --loader=ts-node/esm index.ts"
+    "start": "git commit --all --message \"👍\" && git push"
   },
   "dependencies": {
     "playwright-chromium": "latest",
