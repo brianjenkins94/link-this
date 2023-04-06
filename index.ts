@@ -185,8 +185,8 @@ await fs.appendFile(readme, [
 	"",
 	"Last scraped: " + new Date().toUTCString(),
 	"",
-	"<table><thead><tr><th align=\"center\"><strong>Contents</strong></th></tr></thead><tbody><tr><td><ol>" + searchTerms.map(function(searchTerm) {
-		return "<li><a href=\"#" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\">Search term: <code>" + searchTerm + "</code></a></li>";
+	"<table><thead><tr><th align=\"center\"><strong>Search Terms</strong></th></tr></thead><tbody><tr><td><ol>" + searchTerms.map(function(searchTerm) {
+		return "<li><a href=\"#" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\"><code>" + searchTerm + "</code></a></li>";
 	}).join("") + "</ol></td></tr></tbody></table>",
 	"\n"
 ].join("\n"));
@@ -211,7 +211,7 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 			"logo": undefined
 		}));
 
-		return !/account|manage|salesforce|security|servicenow/ui.test(result.title)
+		return !/account|manage|salesforce|security|servicenow|reliability/ui.test(result.title)
 			&& !/insurance|defense|govern|medical|health|banking|financial/ui.test(result.industry)
 			&& (!/weeks|month/u.test(result.date)
 				// We are preferential to newer job postings, but if the low bound of the salary range is above my /minimum/ salary expectations, I'll look at it.
