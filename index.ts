@@ -26,6 +26,7 @@ const selectors = {
 	"compensation": "[href=\"#SALARY\"]",
 	"size": ".jobs-unified-top-card__job-insight:has([type=\"company\"])",
 	"industry": ".jobs-unified-top-card__job-insight:has([type=\"company\"])",
+	"insights": ".jobs-unified-top-card__job-insight",
 	"getPage": function(index) {
 		return "li[data-test-pagination-page-btn=\"" + index + "\"]";
 	}
@@ -92,32 +93,27 @@ const searches = searchTerms.map(function(searchTerm) {
 							}
 						});
 
-						await page.waitForSelector(".jobs-unified-top-card__job-insight");
+						await page.waitForSelector(selectors.insights);
 
 						const details = page.locator(selectors.details);
 
-						if (false) {
-							const applyButton = details.locator(selectors.apply).first();
+						if (true) {
+							const applyButton = details.locator(selectors.apply, { "hasText": "Apply" }).first();
 
-							if (await applyButton.count() > 0) {
-								await applyButton.waitForSelector("text=/^Apply/");
+							if (await applyButton.count() > 0 && !(await applyButton.textContent()).includes("Easy Apply")) {
+								const popupPromise = page.waitForEvent("popup");
 
-								if (!(await applyButton.textContent()).includes("Easy Apply")) {
+								await applyButton.click();
 
-									const popupPromise = page.waitForEvent("popup");
+								const popup = await popupPromise;
 
-									await applyButton.click();
-
-									const popup = await popupPromise;
-
-									try {
-										await popup.waitForLoadState();
-									} catch (error) { } finally {
-										await popup.close();
-									}
-
-									console.log("Applied ¬‿¬");
+								try {
+									await popup.waitForLoadState();
+								} catch (error) { } finally {
+									await popup.close();
 								}
+
+								console.log("Applied ¬‿¬");
 							}
 						}
 
@@ -216,6 +212,9 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 			&& (!/weeks|month/u.test(result.date)
 				// We are preferential to newer job postings, but if the low bound of the salary range is above my /minimum/ salary expectations, I'll look at it.
 				|| parseInt((result.compensation?.match(/\$[\d,]+/gu) || [""])[0].replace(/[$,]+/gu, "")) >= 150000)
+	}).sort(function(a, b) {
+		// Sort alphabetically by company name
+		return a.company.toLowerCase().localeCompare(b.company.toLowerCase());
 	});
 
 	const table = [
@@ -236,7 +235,7 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 		table.push(
 			"<tr>",
 			"<td><a href=\"" + link + "\"><img alt=\"" + company + "\" height=\"50px\" width=\"50px\" src=\"" + logo + "\"></a></td>",
-			"<td><strong>" + company + "</strong>" + (industry !== undefined ? "<br /><small><em>" + industry + "</em></small>" : "") + "</td>",
+			"<td><strong>" + company + "</strong>" + (industry !== undefined ? "<br /><em>" + industry + "</em>" : "") + "</td>",
 			"<td><ul><li>💼 <a href=\"" + link + "\">" + title + "</a></li>" + (compensation !== undefined ? "<li>💰 " + compensation + "</li>" : "") + (size !== undefined ? "<li>👥 " + size + "</li>" : "") + (!date.includes("week") ? "<li><strong>⚠ " + date + "</strong></li>" : "<li>📅 " + date + "</li>") + "</ul></td>",
 			//"<td>" + size + "</td>",
 			//"<td>" + (compensation?.split(" (from job description)")[0] ?? "") + "</td>",
@@ -260,6 +259,6 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 const endTime = performance.now();
 const dateTime = new Date(endTime - startTime);
 
-console.log("Job began at" + dateTime.toUTCString() + " and took " + dateTime.getMinutes() + " minutes");
+console.log("Job began at " + dateTime.toUTCString() + " and took " + dateTime.getMinutes() + " minutes.");
 
 process.exit(0);
