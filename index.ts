@@ -41,6 +41,7 @@ const searchTerms = [
 	"node.js",
 	"professional services",
 	"solutions",
+	"startup",
 	"support engineer",
 	"typescript"
 ];
@@ -71,11 +72,16 @@ const searches = searchTerms.map(function(searchTerm) {
 					]);
 				}
 
-				await page.goto(url);
+				// TODO: Improve
+				try {
+					await page.goto(url);
+				} catch (error) {
+					await page.goto(url);
+				}
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber < 12; pageNumber++) {
+				for (let pageNumber = 2; pageNumber < 22; pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
@@ -97,7 +103,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 						const details = page.locator(selectors.details);
 
-						if (true) {
+						if (false) {
 							const applyButton = details.locator(selectors.apply, { "hasText": "Apply" }).first();
 
 							if (await applyButton.count() > 0 && !(await applyButton.textContent()).includes("Easy Apply")) {
