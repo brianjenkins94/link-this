@@ -48,12 +48,13 @@ const searchTerms = [
 
 const searches = searchTerms.map(function(searchTerm) {
 	const query = new URLSearchParams({
-		"keywords": searchTerm,
+		"keywords": searchTerm + " NOT manager",
 		"location": "United States",
 		"sortBy": "DD",
-		"f_JT": "F",
-		"f_SB2": "6",
-		"f_WT": "2"
+		"f_JT": "F", // Full Time
+		"f_SB2": "6", // $140,000+
+		"f_TPR": "r2592000", // Past month
+		"f_WT": "2" // Remote
 	});
 
 	const url = "https://www.linkedin.com/jobs/search?" + query;
@@ -81,7 +82,9 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				for (let pageNumber = 2; pageNumber < 22; pageNumber++) {
+				const PAGES_TO_SCRAPE = 20;
+
+				for (let pageNumber = 2; pageNumber < (PAGES_TO_SCRAPE + 2); pageNumber++) {
 					await page.waitForTimeout(2500);
 
 					// Mitigate skipping
