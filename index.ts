@@ -73,6 +73,12 @@ const searches = searchTerms.map(function(searchTerm) {
 					]);
 				}
 
+				page.on("request", function(request) {
+					if ([/* "image", "stylesheet", */ "media", "font", "imageset"].includes(request.resourceType())) {
+						return request.abort();
+					}
+				});
+
 				// TODO: Improve
 				try {
 					await page.goto(url);
@@ -82,7 +88,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 				const results = [];
 
-				const PAGES_TO_SCRAPE = 20;
+				const PAGES_TO_SCRAPE = 8;
 
 				for (let pageNumber = 2; pageNumber < (PAGES_TO_SCRAPE + 2); pageNumber++) {
 					await page.waitForTimeout(2500);
@@ -106,7 +112,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 						const details = page.locator(selectors.details);
 
-						if (false) {
+						if (true) {
 							const applyButton = details.locator(selectors.apply, { "hasText": "Apply" }).first();
 
 							if (await applyButton.count() > 0 && !(await applyButton.textContent()).includes("Easy Apply")) {
