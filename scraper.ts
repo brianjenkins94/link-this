@@ -1,9 +1,9 @@
-import { Browser, BrowserContext, chromium, Page } from "playwright-extra";
+import { Browser, BrowserContext, Page } from "playwright-chromium";
+import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import HumanizePlugin from "@extra/humanize";
+//import HumanizePlugin from "@extra/humanize";
 
 chromium.use(StealthPlugin());
-chromium.use(HumanizePlugin());
 
 let browser: Browser;
 

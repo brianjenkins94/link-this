@@ -17,7 +17,6 @@
     "start": "node --experimental-specifier-resolution=node --loader=ts-node/esm index.ts && git commit --all --message \"👍\" && git push"
   },
   "dependencies": {
-    "@extra/humanize": "latest",
     "playwright-chromium": "latest",
     "playwright-extra": "latest",
     "puppeteer-extra-plugin-stealth": "latest",
