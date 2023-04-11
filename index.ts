@@ -50,7 +50,7 @@ const searches = searchTerms.map(function(searchTerm) {
 	const query = new URLSearchParams({
 		"keywords": searchTerm + " NOT manager",
 		"location": "United States",
-		"sortBy": "DD",
+		"sortBy": "DD", // Date descending
 		"f_JT": "F", // Full Time
 		"f_SB2": "6", // $140,000+
 		"f_TPR": "r2592000", // Past month
@@ -195,7 +195,7 @@ await fs.appendFile(readme, [
 	"Last scraped: " + new Date().toUTCString(),
 	"",
 	"<table><thead><tr><th align=\"center\"><strong>Search Terms</strong></th></tr></thead><tbody><tr><td><ol>" + searchTerms.map(function(searchTerm) {
-		return "<li><a href=\"#" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\"><code>" + searchTerm + "</code></a></li>";
+		return "<li><a href=\"#search-term-" + searchTerm.toLowerCase().replace(/ /gu, "-").replace(/[^\w-]/gu, "") + "\"><code>" + searchTerm + "</code></a></li>";
 	}).join("") + "</ol></td></tr></tbody></table>",
 	"\n"
 ].join("\n"));
