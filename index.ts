@@ -94,11 +94,21 @@ const searches = searchTerms.map(function(searchTerm) {
 					// Mitigate skipping
 					await page.waitForTimeout(2500);
 
+					// TODO: Improve
 					try {
 						await page.waitForSelector(selectors.jobs);
 					} catch (error) {
-						// This will result in data being skipped.
-						break;
+						try {
+							await page.reload();
+
+							// Mitigate skipping
+							await page.waitForTimeout(2500);
+
+							await page.waitForSelector(selectors.jobs);
+						} catch (error) {
+							// This will result in data being skipped.
+							break;
+						}
 					}
 
 					for (let x = 0, jobs = page.locator(selectors.jobs), job = jobs.nth(x); x < await jobs.count(); x++, jobs = page.locator(selectors.jobs), job = jobs.nth(x)) {
