@@ -53,7 +53,7 @@ const searches = searchTerms.map(function(searchTerm) {
 		"sortBy": "DD", // Date descending
 		"f_JT": "F", // Full Time
 		"f_SB2": "6", // $140,000+
-		"f_TPR": "r2592000", // Past month
+		"f_TPR": "r604800", // Past week
 		"f_WT": "2" // Remote
 	});
 
@@ -73,10 +73,10 @@ const searches = searchTerms.map(function(searchTerm) {
 					]);
 				}
 
-				page.on("request", function(request) {
-					if ([/* "image", "stylesheet", */ "media", "font", "imageset"].includes(request.resourceType())) {
-						return request.abort();
-					}
+				page.route("**/*", function(route) {
+					return [/* "image", "stylesheet", */ "media", "font", "imageset"].includes(route.request().resourceType())
+						? route.abort()
+						: route.continue();
 				});
 
 				// TODO: Improve
