@@ -11,8 +11,8 @@ let context: BrowserContext;
 
 export async function scrape(url, callback) {
 	browser ??= await chromium.launch({
-		"executablePath": process.platform === "win32" ? "C:/Program Files/Google/Chrome/Application/chrome.exe" : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-		"args": ["--no-sandbox"],
+		//"executablePath": process.platform === "win32" ? "C:/Program Files/Google/Chrome/Application/chrome.exe" : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+		//"args": ["--no-sandbox"],
 		"devtools": true,
 		"headless": false
 	});
