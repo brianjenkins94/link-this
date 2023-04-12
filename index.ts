@@ -91,10 +91,15 @@ const searches = searchTerms.map(function(searchTerm) {
 				const PAGES_TO_SCRAPE = 8;
 
 				for (let pageNumber = 2; pageNumber < (PAGES_TO_SCRAPE + 2); pageNumber++) {
+					// Mitigate skipping
 					await page.waitForTimeout(2500);
 
-					// Mitigate skipping
-					await page.waitForSelector(selectors.jobs);
+					try {
+						await page.waitForSelector(selectors.jobs);
+					} catch (error) {
+						// This will result in data being skipped.
+						break;
+					}
 
 					for (let x = 0, jobs = page.locator(selectors.jobs), job = jobs.nth(x); x < await jobs.count(); x++, jobs = page.locator(selectors.jobs), job = jobs.nth(x)) {
 						job.evaluate(function(element) {
@@ -108,7 +113,39 @@ const searches = searchTerms.map(function(searchTerm) {
 							}
 						});
 
-						await page.waitForSelector(selectors.insights);
+						// TODO: Improve
+						try {
+							await page.waitForSelector(selectors.insights);
+						} catch (error) {
+							try {
+								let previousJob = jobs.nth(x - 1)
+
+								previousJob.evaluate(function(element) {
+									element.scrollIntoView(true);
+								});
+
+								await previousJob.click({
+									"position": {
+										"x": 0,
+										"y": 0
+									}
+								});
+
+								await page.waitForSelector(selectors.insights);
+
+								await job.click({
+									"position": {
+										"x": 0,
+										"y": 0
+									}
+								});
+
+								await page.waitForSelector(selectors.insights);
+							} catch (error) {
+								// This will result in data being skipped.
+								continue;
+							}
+						}
 
 						const details = page.locator(selectors.details);
 
