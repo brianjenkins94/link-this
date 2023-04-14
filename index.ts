@@ -79,14 +79,21 @@ const searches = searchTerms.map(function(searchTerm) {
 						: route.continue();
 				});
 
+				const results = [];
+
 				// TODO: Improve
 				try {
 					await page.goto(url);
 				} catch (error) {
-					await page.goto(url);
-				}
+					try {
+						await page.goto(url);
+					} catch (error) {
+						// This will result in data being skipped.
+						await page.close();
 
-				const results = [];
+						resolve(results);
+					}
+				}
 
 				const PAGES_TO_SCRAPE = 8;
 
