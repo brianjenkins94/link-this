@@ -16,11 +16,11 @@ if (LI_AT_COOKIE === undefined) {
 const selectors = {
 	"apply": ".jobs-apply-button",
 	"jobs": ".job-card-container",
-	"logo": ".artdeco-entity-lockup__image img",
+	"logo": ".artdeco-entity-lockup__image img[class*=\"square\"]", // ".artdeco-entity-lockup__image img",
 	"details": ".jobs-details__main-content",
 	"title": ".artdeco-entity-lockup__title",
 	"link": ".artdeco-entity-lockup__title a",
-	"company": ".job-card-container__company-name",
+	"company": ".job-card-container__primary-description", // ".job-card-container__company-name",
 	"location": ".artdeco-entity-lockup__caption",
 	"date": ".jobs-unified-top-card__posted-date",
 	"compensation": "[href=\"#SALARY\"]",
@@ -48,7 +48,7 @@ const searchTerms = [
 
 const searches = searchTerms.map(function(searchTerm) {
 	const query = new URLSearchParams({
-		"keywords": searchTerm + " NOT manager",
+		"keywords": searchTerm, // + " NOT manager",
 		"location": "United States",
 		"sortBy": "DD", // Date descending
 		"f_JT": "F", // Full Time
