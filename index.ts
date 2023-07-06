@@ -33,16 +33,13 @@ const selectors = {
 };
 
 const searchTerms = [
-	"api",
 	"architect",
-	"customer engineer",
 	"implementation",
 	"integration",
 	"node.js",
-	"professional services",
 	"solutions",
 	"startup",
-	"support engineer",
+	"technical",
 	"typescript"
 ];
 
@@ -166,7 +163,7 @@ const searches = searchTerms.map(function(searchTerm) {
 
 						const details = page.locator(selectors.details);
 
-						if (true) {
+						if (false) {
 							const applyButton = details.locator(selectors.apply, { "hasText": "Apply" }).first();
 
 							if (await applyButton.count() > 0 && !(await applyButton.textContent()).includes("Easy Apply")) {
@@ -174,12 +171,14 @@ const searches = searchTerms.map(function(searchTerm) {
 
 								await applyButton.click();
 
-								const popup = await popupPromise;
+								let popup;
 
 								try {
+									popup = await popupPromise;
+
 									await popup.waitForLoadState();
 								} catch (error) { } finally {
-									await popup.close();
+									await popup?.close();
 								}
 
 								console.log("Applied ¬‿¬");
@@ -270,6 +269,11 @@ for (let x = 0, result = results[x]; x < results.length; x++, result = results[x
 			"location": undefined,
 			"logo": undefined
 		}))) {
+			return false;
+		}
+
+		// Smaller companies
+		if (result.size.includes(",")) {
 			return false;
 		}
 
